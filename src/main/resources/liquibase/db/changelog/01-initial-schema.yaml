@@ -1,0 +1,321 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_tables_v1
+      author: dev
+      changes:
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: username
+                  type: VARCHAR(100)
+              - column:
+                  name: password_hash
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createTable:
+            tableName: brands
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: logo_url
+                  type: VARCHAR(255)
+
+        - createTable:
+            tableName: products
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: TEXT
+              - column:
+                  name: brand_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_product_brand
+                    references: brands(id)
+              - column:
+                  name: price
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: stock_quantity
+                  type: INT
+                  defaultValue: 0
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createTable:
+            tableName: carts
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cart_user
+                    references: users(id)
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createTable:
+            tableName: cart_items
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: cart_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cart_item_cart
+                    references: carts(id)
+              - column:
+                  name: product_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_cart_item_product
+                    references: products(id)
+              - column:
+                  name: quantity
+                  type: INT
+                  constraints:
+                    nullable: false
+                    defaultValue: 1
+
+        - createTable:
+            tableName: orders
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_order_user
+                    references: users(id)
+              - column:
+                  name: total_amount
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: 'PENDING'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: shipping_address
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createTable:
+            tableName: order_items
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_order_item_order
+                    references: orders(id)
+              - column:
+                  name: product_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_order_item_product
+                    references: products(id)
+              - column:
+                  name: quantity
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: unit_price
+                  type: DECIMAL(10,2)
+                  constraints:
+                    nullable: false
+
+        - createTable:
+            tableName: reviews
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_review_user
+                    references: users(id)
+              - column:
+                  name: product_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_review_product
+                    references: products(id)
+              - column:
+                  name: rating
+                  type: INT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: TEXT
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+
+        - createIndex:
+            indexName: idx_user_email
+            tableName: users
+            columns:
+              - column:
+                  name: email
+
+        - createIndex:
+            indexName: idx_product_brand
+            tableName: products
+            columns:
+              - column:
+                  name: brand_id
+
+        - createIndex:
+            indexName: idx_cart_user
+            tableName: carts
+            columns:
+              - column:
+                  name: user_id
+
+        - createIndex:
+            indexName: idx_order_user
+            tableName: orders
+            columns:
+             - column:
+                  name: user_id
+
+        - createIndex:
+            indexName: idx_review_product
+            tableName: reviews
+            columns:
+             - column:
+                  name: product_id
+
+  - changeSet:
+      id: add_sample_brands
+      author: dev
+      changes:
+        - insert:
+            tableName: brands
+            columns:
+              - column:
+                  name: id
+                  value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+              - column:
+                  name: name
+                  value: "Chanel"
+              - column:
+                  name: description
+                  value: "Luxury French fashion house"
+              - column:
+                  name: logo_url
+                  value: "/brands/chanel.png"
+
+        - insert:
+            tableName: brands
+            columns:
+              - column:
+                  name: id
+                  value: "b2c3d4e5-f6a7-8901-bcde-f23456789012"
+              - column:
+                  name: name
+                  value: "Dior"
+              - column:
+                  name: description
+                  value: "French luxury goods company"
+              - column:
+                  name: logo_url
+                  value: "/brands/dior.png"
